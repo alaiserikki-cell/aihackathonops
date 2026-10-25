@@ -17,7 +17,7 @@
       "newHigh": 41,
       "grade": "D",
       "newStatus": "Requirements not met",
-      "reason": "Investment or area is below the configured brand minimum."
+      "reason": "Investment ₹10 lakh vs ₹30 lakh required (gap ₹20 lakh). Unblocks if confirmed funds reach ₹30 lakh. Space 250 sq ft vs 400 sq ft required (gap 150 sq ft). Unblocks with a site of at least 400 sq ft."
     },
     {
       "id": "APP-102",
@@ -29,7 +29,7 @@
       "newHigh": 58.8,
       "grade": "C",
       "newStatus": "Requirements not met",
-      "reason": "Investment or area is below the configured brand minimum."
+      "reason": "Investment ₹15 lakh vs ₹30 lakh required (gap ₹15 lakh). Unblocks if confirmed funds reach ₹30 lakh. Space 300 sq ft vs 400 sq ft required (gap 100 sq ft). Unblocks with a site of at least 400 sq ft."
     },
     {
       "id": "APP-103",
@@ -41,7 +41,7 @@
       "newHigh": 76.5,
       "grade": "B",
       "newStatus": "Requirements not met",
-      "reason": "Investment or area is below the configured brand minimum."
+      "reason": "Investment ₹20 lakh vs ₹30 lakh required (gap ₹10 lakh). Unblocks if confirmed funds reach ₹30 lakh. Space 350 sq ft vs 400 sq ft required (gap 50 sq ft). Unblocks with a site of at least 400 sq ft."
     },
     {
       "id": "APP-104",
@@ -53,7 +53,7 @@
       "newHigh": 89.2,
       "grade": "A",
       "newStatus": "Requirements not met",
-      "reason": "Investment or area is below the configured brand minimum."
+      "reason": "Investment ₹25 lakh vs ₹30 lakh required (gap ₹5 lakh). Unblocks if confirmed funds reach ₹30 lakh."
     },
     {
       "id": "APP-105",
@@ -65,7 +65,7 @@
       "newHigh": 95,
       "grade": "A",
       "newStatus": "Recommended",
-      "reason": "Screening requirements are satisfied and the partner ranks within available territory capacity. Declared funds and premises still require verification; this is not final approval."
+      "reason": "Meets every gate: investment ₹30 lakh vs ₹30 lakh required, 450 sq ft vs 400 sq ft, launch 5 months within the 3 to 6 month window. Ranked 3 of 3 slots in TER-QA (High priority). Declared funds and site still need verification; this is not final approval."
     },
     {
       "id": "APP-106",
@@ -77,7 +77,7 @@
       "newHigh": 100,
       "grade": "A",
       "newStatus": "Recommended",
-      "reason": "Screening requirements are satisfied and the partner ranks within available territory capacity. Declared funds and premises still require verification; this is not final approval."
+      "reason": "Meets every gate: investment ₹35 lakh vs ₹30 lakh required, 500 sq ft vs 400 sq ft, launch 6 months within the 3 to 6 month window. Ranked 1 of 3 slots in TER-QA (High priority). Declared funds and site still need verification; this is not final approval."
     },
     {
       "id": "APP-107",
@@ -89,7 +89,7 @@
       "newHigh": 95,
       "grade": "A",
       "newStatus": "Waitlisted",
-      "reason": "All available slots in this territory have provisional recommendations."
+      "reason": "TER-QA (High priority) has 3 slots, all provisionally allocated: APP-106 (100), APP-227 (95), APP-105 (95). Lowest allocated score 95 vs 95. Unblocks if a slot opens or the brand adds one."
     },
     {
       "id": "APP-108",
@@ -101,7 +101,7 @@
       "newHigh": 95,
       "grade": "A",
       "newStatus": "Waitlisted",
-      "reason": "All available slots in this territory have provisional recommendations."
+      "reason": "TER-QA (High priority) has 3 slots, all provisionally allocated: APP-106 (100), APP-227 (95), APP-105 (95). Lowest allocated score 95 vs 95. Unblocks if a slot opens or the brand adds one."
     },
     {
       "id": "APP-109",
@@ -113,7 +113,7 @@
       "newHigh": 95,
       "grade": "A",
       "newStatus": "Waitlisted",
-      "reason": "All available slots in this territory have provisional recommendations."
+      "reason": "TER-QA (High priority) has 3 slots, all provisionally allocated: APP-106 (100), APP-227 (95), APP-105 (95). Lowest allocated score 95 vs 95. Unblocks if a slot opens or the brand adds one."
     },
     {
       "id": "APP-110",
@@ -125,7 +125,7 @@
       "newHigh": 95,
       "grade": "A",
       "newStatus": "Waitlisted",
-      "reason": "All available slots in this territory have provisional recommendations."
+      "reason": "TER-QA (High priority) has 3 slots, all provisionally allocated: APP-106 (100), APP-227 (95), APP-105 (95). Lowest allocated score 95 vs 95. Unblocks if a slot opens or the brand adds one."
     },
     {
       "id": "APP-111",
@@ -137,7 +137,7 @@
       "newHigh": 95,
       "grade": "A",
       "newStatus": "Waitlisted",
-      "reason": "All available slots in this territory have provisional recommendations."
+      "reason": "TER-QA (High priority) has 3 slots, all provisionally allocated: APP-106 (100), APP-227 (95), APP-105 (95). Lowest allocated score 95 vs 95. Unblocks if a slot opens or the brand adds one."
     },
     {
       "id": "APP-112",
@@ -149,7 +149,7 @@
       "newHigh": 95,
       "grade": "A",
       "newStatus": "Waitlisted",
-      "reason": "All available slots in this territory have provisional recommendations."
+      "reason": "TER-QA (High priority) has 3 slots, all provisionally allocated: APP-106 (100), APP-227 (95), APP-105 (95). Lowest allocated score 95 vs 95. Unblocks if a slot opens or the brand adds one."
     },
     {
       "id": "APP-201",
@@ -161,7 +161,7 @@
       "newHigh": 95,
       "grade": "U",
       "newStatus": "Clarification needed",
-      "reason": "Missing: Investment capacity (₹ lakh)."
+      "reason": "Missing: Investment capacity (₹ lakh). Unblocks when this is provided."
     },
     {
       "id": "APP-202",
@@ -173,7 +173,7 @@
       "newHigh": 95,
       "grade": "U",
       "newStatus": "Clarification needed",
-      "reason": "1 proposed data correction awaiting confirmation. Missing: Investment capacity (₹ lakh)."
+      "reason": "Investment capacity (₹ lakh) written as \"₹25,00,000\"; proposed reading 25 lakh. Unblocks when the value is confirmed in Data review. Missing: Investment capacity (₹ lakh). Unblocks when this is provided."
     },
     {
       "id": "APP-203",
@@ -185,7 +185,7 @@
       "newHigh": 95,
       "grade": "U",
       "newStatus": "Clarification needed",
-      "reason": "1 proposed data correction awaiting confirmation. Missing: Investment capacity (₹ lakh)."
+      "reason": "Investment capacity (₹ lakh) written as \"20–30 lakh\"; no safe reading. Unblocks when the value is confirmed in Data review. Missing: Investment capacity (₹ lakh). Unblocks when this is provided."
     },
     {
       "id": "APP-204",
@@ -197,7 +197,7 @@
       "newHigh": 95,
       "grade": "U",
       "newStatus": "Clarification needed",
-      "reason": "1 proposed data correction awaiting confirmation. Missing: Investment capacity (₹ lakh)."
+      "reason": "Investment capacity (₹ lakh) written as \"4 months\"; no safe reading. Unblocks when the value is confirmed in Data review. Missing: Investment capacity (₹ lakh). Unblocks when this is provided."
     },
     {
       "id": "APP-205",
@@ -209,7 +209,7 @@
       "newHigh": 95,
       "grade": "U",
       "newStatus": "Clarification needed",
-      "reason": "1 proposed data correction awaiting confirmation. Missing: Investment capacity (₹ lakh)."
+      "reason": "Investment capacity (₹ lakh) written as \"-5\"; no safe reading. Unblocks when the value is confirmed in Data review. Missing: Investment capacity (₹ lakh). Unblocks when this is provided."
     },
     {
       "id": "APP-206",
@@ -221,7 +221,7 @@
       "newHigh": 95,
       "grade": "U",
       "newStatus": "Clarification needed",
-      "reason": "1 proposed data correction awaiting confirmation."
+      "reason": "Space size (sq ft) written as \"500 sqft\"; proposed reading 500. Unblocks when the value is confirmed in Data review."
     },
     {
       "id": "APP-207",
@@ -233,7 +233,7 @@
       "newHigh": 80,
       "grade": "U",
       "newStatus": "Site needed",
-      "reason": "Confirm an identified site, positive usable area and actual floor."
+      "reason": "Site not confirmed: space is Not yet identified; floor is \"Not known\", which does not say which floor. Unblocks when the applicant confirms an owned or rented site of at least 400 sq ft and its actual floor."
     },
     {
       "id": "APP-208",
@@ -245,7 +245,7 @@
       "newHigh": 95,
       "grade": "A",
       "newStatus": "Site needed",
-      "reason": "Confirm an identified site, positive usable area and actual floor."
+      "reason": "Site not confirmed: floor is \"Upper\", which does not say which floor. Unblocks when the applicant confirms an owned or rented site of at least 400 sq ft and its actual floor."
     },
     {
       "id": "APP-209",
@@ -257,7 +257,7 @@
       "newHigh": 95,
       "grade": "A",
       "newStatus": "Site needed",
-      "reason": "Confirm an identified site, positive usable area and actual floor."
+      "reason": "Site not confirmed: floor is \"Mall unit\", which does not say which floor. Unblocks when the applicant confirms an owned or rented site of at least 400 sq ft and its actual floor."
     },
     {
       "id": "APP-210",
@@ -269,7 +269,7 @@
       "newHigh": 95,
       "grade": "A",
       "newStatus": "Clarification needed",
-      "reason": "Space status conflicts with the notes. Confirm the premises and update the notes."
+      "reason": "Space is \"Rented\" but notes say \"Still searching for a shop\". Unblocks when the applicant confirms whether a site exists."
     },
     {
       "id": "APP-211",
@@ -281,7 +281,7 @@
       "newHigh": 95,
       "grade": "A",
       "newStatus": "Clarification needed",
-      "reason": "Floor conflicts with the site description in the notes. Confirm the actual floor."
+      "reason": "Floor is Ground but notes say \"The shop is on the first floor only\". Unblocks when the actual floor is confirmed."
     },
     {
       "id": "APP-212",
@@ -293,7 +293,7 @@
       "newHigh": 95,
       "grade": "A",
       "newStatus": "Location unavailable",
-      "reason": "An existing store already occupies this pin code. Choose a different pin code."
+      "reason": "Pin 570009 already has a store (ST-06). The brand never opens two stores in one pin. Unblocks if the applicant moves to an open pin. No open pin with a free slot in Mysuru right now."
     },
     {
       "id": "APP-213",
@@ -305,7 +305,7 @@
       "newHigh": 95,
       "grade": "A",
       "newStatus": "Clarification needed",
-      "reason": "Pin code does not match the selected city."
+      "reason": "Pin 560199 does not match Mysuru (Mysuru pins start with 570). Unblocks when the pin and city agree."
     },
     {
       "id": "APP-214",
@@ -317,7 +317,7 @@
       "newHigh": 95,
       "grade": "A",
       "newStatus": "Territory review",
-      "reason": "Pin code is not covered by an uploaded territory."
+      "reason": "Pin 570999 is not in any uploaded territory (Mysuru territories: TER-QA, TER-OVER-1, TER-OVER-2). Unblocks if the brand adds this pin to a territory or the applicant moves to a covered pin. No open pin with a free slot in Mysuru right now."
     },
     {
       "id": "APP-215",
@@ -329,7 +329,7 @@
       "newHigh": 95,
       "grade": "A",
       "newStatus": "Territory review",
-      "reason": "Pin code appears in more than one territory. Resolve territory overlap."
+      "reason": "Pin 570990 is in TER-OVER-1 and TER-OVER-2. Unblocks when the brand assigns it to one territory."
     },
     {
       "id": "APP-216",
@@ -341,7 +341,7 @@
       "newHigh": 95,
       "grade": "A",
       "newStatus": "Waitlisted",
-      "reason": "All available slots in this territory have provisional recommendations."
+      "reason": "TER-ZERO (High priority) has 0 open slots. Unblocks if the brand opens a slot here."
     },
     {
       "id": "APP-217",
@@ -353,7 +353,7 @@
       "newHigh": 95,
       "grade": "A",
       "newStatus": "Territory review",
-      "reason": "Territory details are incomplete, invalid or conflict with the application."
+      "reason": "Territory TER-BAD cannot allocate: Invalid open slots. Unblocks when the brand fixes this territory row."
     },
     {
       "id": "APP-218",
@@ -365,7 +365,7 @@
       "newHigh": 90,
       "grade": "A",
       "newStatus": "Timeline review",
-      "reason": "Confirm a target launch that meets the configured minimum preparation time."
+      "reason": "Target launch 1 month vs 3 months minimum preparation (gap 2 months). Unblocks if the launch target moves to 3 months or later."
     },
     {
       "id": "APP-DUP",
@@ -377,7 +377,7 @@
       "newHigh": 95,
       "grade": "A",
       "newStatus": "Clarification needed",
-      "reason": "Duplicate application ID; resolve the identity before allocation."
+      "reason": "Application ID APP-DUP appears 2 times in this upload. Unblocks when each record has its own ID."
     },
     {
       "id": "app-dup",
@@ -389,7 +389,7 @@
       "newHigh": 95,
       "grade": "A",
       "newStatus": "Clarification needed",
-      "reason": "Duplicate application ID; resolve the identity before allocation."
+      "reason": "Application ID app-dup appears 2 times in this upload. Unblocks when each record has its own ID."
     },
     {
       "id": "(missing ID)",
@@ -401,7 +401,7 @@
       "newHigh": 95,
       "grade": "A",
       "newStatus": "Clarification needed",
-      "reason": "Missing: Application ID."
+      "reason": "Missing: Application ID. Unblocks when this is provided."
     },
     {
       "id": "APP-222",
@@ -413,7 +413,7 @@
       "newHigh": 95,
       "grade": "A",
       "newStatus": "Clarification needed",
-      "reason": "Missing: Applicant name."
+      "reason": "Missing: Applicant name. Unblocks when this is provided."
     },
     {
       "id": "APP-223",
@@ -425,7 +425,7 @@
       "newHigh": 75,
       "grade": "B",
       "newStatus": "Waitlisted",
-      "reason": "All available slots in this territory have provisional recommendations."
+      "reason": "TER-QA (High priority) has 3 slots, all provisionally allocated: APP-106 (100), APP-227 (95), APP-105 (95). Lowest allocated score 95 vs 75. Unblocks if a slot opens or the brand adds one."
     },
     {
       "id": "APP-224",
@@ -437,7 +437,7 @@
       "newHigh": 90,
       "grade": "A",
       "newStatus": "Waitlisted",
-      "reason": "All available slots in this territory have provisional recommendations."
+      "reason": "TER-QA (High priority) has 3 slots, all provisionally allocated: APP-106 (100), APP-227 (95), APP-105 (95). Lowest allocated score 95 vs 90. Unblocks if a slot opens or the brand adds one."
     },
     {
       "id": "APP-225",
@@ -449,7 +449,7 @@
       "newHigh": 95,
       "grade": "U",
       "newStatus": "Timeline review",
-      "reason": "Confirm a target launch that meets the configured minimum preparation time."
+      "reason": "Target launch is blank; the minimum preparation time is 3 months. Unblocks when a launch of 3 months or later is agreed."
     },
     {
       "id": "APP-226",
@@ -461,7 +461,7 @@
       "newHigh": 95,
       "grade": "U",
       "newStatus": "Clarification needed",
-      "reason": "1 proposed data correction awaiting confirmation. Missing: Investment capacity (₹ lakh)."
+      "reason": "Investment capacity (₹ lakh) written as \"1.5 crore\"; proposed reading 150 lakh. Unblocks when the value is confirmed in Data review. Missing: Investment capacity (₹ lakh). Unblocks when this is provided."
     },
     {
       "id": "APP-227",
@@ -473,7 +473,7 @@
       "newHigh": 95,
       "grade": "A",
       "newStatus": "Recommended",
-      "reason": "Screening requirements are satisfied and the partner ranks within available territory capacity. Declared funds and premises still require verification; this is not final approval."
+      "reason": "Meets every gate: investment ₹30 lakh vs ₹30 lakh required, 500 sq ft vs 400 sq ft, launch 3 months within the 3 to 6 month window. Ranked 2 of 3 slots in TER-QA (High priority). Declared funds and site still need verification; this is not final approval."
     }
   ]
 }
