@@ -139,5 +139,44 @@ for(let [key,task] of Object.entries(s.tasks)){if(!keys.has(key)||!obj(task)||Ob
 for(let [key,dates] of Object.entries(s.taskDates)){if(!keys.has(key)||!obj(dates)||Object.entries(dates).some(([k,v])=>!/^([0-6])$/.test(k)||!str(v)||!/^$|^\d{4}-\d{2}-\d{2}$/.test(v)))return false;}
 if(s.audit.some(a=>!obj(a)||!str(a.text)||!str(a.at)||!Number.isFinite(Date.parse(a.at))))return false;return true;
 }catch(e){return false;}}
-const api={personalGaps,redirectOptions,priorityRank,openSlots,onboardingOrder,territoryCapacity,policyErrors,defaultPolicy,parseNumber,invalidateTasks,validState,fields,numeric,cities,labels,normalize,percentile,band,benchmarks,assess,parseUpdate,businessPoints};if(typeof module!=='undefined')module.exports=api;root.Engine=api;
+// Personalised onboarding plan. Admin steps run from week 1; fit-out, training and opening are worked back from the target launch month.
+const planSteps=[['Funding check','Finance',1,'Verify bank statements or a loan sanction for the declared amount.'],['Site check','Expansion',1,'Visit the site: address, usable area, floor, frontage and legal right to use it.'],['Offer','Expansion',1,'Issue a conditional offer once funding and site are checked.'],['Agreement','Legal',2,'Signed franchise agreement and lease or ownership papers on file.'],['Fit-out','Operations',5,'Interiors, signage, utilities, billing system and opening stock.'],['Training','Training',2,'Brand standards, billing and POS, inventory, customer service.'],['Opening','Operations',1,'Final readiness check, soft launch, then opening day.']];
+const months=['january','february','march','april','may','june','july','august','september','october','november','december'];
+const festivals={diwali:['2026-11-08','2027-10-29','2028-10-17'],deepavali:['2026-11-08','2027-10-29','2028-10-17'],christmas:'12-25',sankranti:'01-14','new year':'01-01'};
+const utc=d=>new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()));
+const addDays=(d,n)=>new Date(d.getTime()+n*86400000);
+function addMonths(d,n){let whole=Math.floor(n),r=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth()+whole,d.getUTCDate()));return addDays(r,Math.round((n-whole)*30));}
+function fmtDate(d){return d.getUTCDate()+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getUTCMonth()]+' '+d.getUTCFullYear();}
+// Reads a deadline phrase from the notes. Returns null when there is none. Notes never change a decision; they only raise a flag.
+function deadlineFromNotes(notes,today){let t=String(notes||''),m,now=utc(today);
+ if((m=t.match(/\b(before|by|ahead of|in time for|for)\s+(diwali|deepavali|christmas|sankranti|new year)\b/i))){let key=m[2].toLowerCase(),f=festivals[key],date=Array.isArray(f)?f.map(x=>new Date(x+'T00:00:00Z')).find(x=>x>=now):[0,1].map(k=>new Date(Date.UTC(now.getUTCFullYear()+k,+f.slice(0,2)-1,+f.slice(3)))).find(x=>x>=now);return {phrase:m[0],date:date||null,label:m[2][0].toUpperCase()+m[2].slice(1).toLowerCase(),assumed:true};}
+ if((m=t.match(new RegExp('\\b(before|by)\\s+('+months.join('|')+')(?:\\s+(\\d{4}))?\\b','i')))){let mi=months.indexOf(m[2].toLowerCase()),y=m[3]?+m[3]:now.getUTCFullYear(),date=m[1].toLowerCase()==='before'?new Date(Date.UTC(y,mi,1)):new Date(Date.UTC(y,mi+1,0));if(!m[3]&&date<now)date=new Date(Date.UTC(date.getUTCFullYear()+1,date.getUTCMonth(),date.getUTCDate()));return {phrase:m[0],date,label:fmtDate(date),assumed:false};}
+ if((m=t.match(/\bwithin\s+(\d+)\s+(weeks?|months?)\b/i))){let n=+m[1],date=/^w/i.test(m[2])?addDays(now,n*7):addMonths(now,n);return {phrase:m[0],date,label:fmtDate(date),assumed:false};}
+ if((m=t.match(/\b(?:before|by|ahead of|in time for)\s+(?:the\s+)?([A-Z][a-z]+(?:\s[A-Z][a-z]+)?)/)))return {phrase:m[0],date:null,label:m[1],assumed:false};
+ return null;}
+function onboardingPlan(a,{today=new Date(),stores=[],settings=defaultPolicy}={}){let now=utc(today),assumedLaunch=!Number.isFinite(a.launch),launchMonths=assumedLaunch?Number(settings.targetLaunch)||6:a.launch,launchDate=addMonths(now,launchMonths),weeks=Math.max(1,Math.round((launchDate-now)/(7*86400000)));
+ let newToRetail=!(a.experience>=1),steps=planSteps.map(([title,owner,len,detail])=>({title,owner,len:title==='Training'&&newToRetail?3:len,detail}));
+ let need=steps.reduce((n,s)=>n+s.len,0),admin=steps.slice(0,4).reduce((n,s)=>n+s.len,0),tail=need-admin,tailStart=Math.max(admin+1,weeks-tail+1),openWeek=tailStart+tail-1,week=1;
+ steps.forEach((s,i)=>{if(i===4)week=tailStart;s.start=week;s.end=week+s.len-1;week=s.end+1;s.from=fmtDate(addDays(now,(s.start-1)*7));s.to=fmtDate(addDays(now,s.end*7-1));});
+ let openDate=addDays(now,openWeek*7-1),flags=[];
+ if(assumedLaunch)flags.push(`Target launch is blank, so this plan assumes ${launchMonths} months. Confirm the launch month.`);
+ if(openWeek>weeks)flags.push(`Target launch of ${launchMonths} month${launchMonths===1?'':'s'} gives ${weeks} weeks, but this plan needs ${need}. Earliest realistic opening: ${fmtDate(openDate)}.`);
+ let deadline=deadlineFromNotes(a.notes,now);
+ if(deadline&&deadline.date&&openDate>deadline.date)flags.push(`Notes say "${deadline.phrase}" (${deadline.label}${deadline.assumed?', assumed '+fmtDate(deadline.date):''}), but the planned opening is ${fmtDate(openDate)}. Agree a realistic date with the partner.`);
+ else if(deadline&&!deadline.date)flags.push(`Notes mention a deadline ("${deadline.phrase}") that the plan cannot date. Confirm the date with the partner.`);
+ let lang=['Kannada','English','Hindi'].includes(a.language)?a.language:null,shadow=stores.find(s=>s.city===a.city),tr=steps[5];
+ let training={language:lang,weeks:tr.len,from:tr.from,to:tr.to,text:`Training in ${lang||'a language still to be confirmed (Kannada, English or Hindi)'}: ${tr.len} weeks, weeks ${tr.start} to ${tr.end} (${tr.from} to ${tr.to}). Modules: brand standards, billing and POS, inventory, customer service.`+(newToRetail?` ${a.experience===0?'No':'Under 1 year of'} retail experience, so 1 extra week of supervised shifts at ${shadow?'existing store '+shadow.id+' ('+shadow.city+')':'an existing brand store (none in '+(a.city||'this city')+'; brand to assign one)'}.`:` ${a.experience} years of retail experience, so training focuses on brand systems rather than retail basics.`)};
+ let needed=[`Proof of funds for ₹${Number.isFinite(a.investment)?a.investment:'?'} lakh (bank statement or loan sanction letter)`];
+ if(a.space==='Owned')needed.push('Ownership document for the site');else if(a.space==='Rented')needed.push('Signed lease or landlord letter of intent');else needed.push('An identified site: owned or rented, size in sq ft and floor');
+ if(a.space==='Owned'||a.space==='Rented')needed.push('Site photos and a floor plan');
+ if(!a.area&&a.space!=='Not yet identified')needed.push('Usable size of the site in sq ft');
+ if(!['Ground','First','Other confirmed'].includes(a.floor)&&a.space!=='Not yet identified')needed.push(`Actual floor of the site (recorded as "${a.floor||'blank'}")`);
+ if(!lang)needed.push('Training language: Kannada, English or Hindi');
+ if(businessPoints(a.business)===null)needed.push('Whether the partner has personally owned or run a business');
+ for(let p of a.pending||[])needed.push(`Confirmed ${labels[p.field]} (sheet says "${p.raw}")`);
+ for(let m of a.missing||[])needed.push(m);
+ if(assumedLaunch)needed.push('Target launch month');
+ if(deadline&&(!deadline.date||openDate>deadline.date))needed.push(`Agreement on the opening date (notes: "${deadline.phrase}")`);
+ return {launchMonths,assumedLaunch,launchDate:fmtDate(launchDate),weeks,need,openWeek,openDate:fmtDate(openDate),steps,training,deadline:deadline&&{...deadline,date:deadline.date&&fmtDate(deadline.date)},flags,needed:[...new Set(needed)]};}
+const api={onboardingPlan,deadlineFromNotes,planSteps,personalGaps,redirectOptions,priorityRank,openSlots,onboardingOrder,territoryCapacity,policyErrors,defaultPolicy,parseNumber,invalidateTasks,validState,fields,numeric,cities,labels,normalize,percentile,band,benchmarks,assess,parseUpdate,businessPoints};if(typeof module!=='undefined')module.exports=api;root.Engine=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

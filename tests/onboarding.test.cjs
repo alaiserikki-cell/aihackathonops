@@ -1,0 +1,14 @@
+const {test}=require('node:test'),a=require('node:assert/strict'),E=require('../dist/engine.js');
+const today=new Date('2026-10-25T00:00:00Z'),stores=[{id:'ST-06',city:'Mysuru',pin:'570009'},{id:'ST-10',city:'Belagavi',pin:'590001'}];
+const base={id:'APP-001',name:'Ravi',city:'Mysuru',state:'Karnataka',pin:'570001',investment:30,experience:4,business:'Runs a footwear store',space:'Rented',area:450,floor:'Ground',launch:4,language:'Kannada',notes:''};
+const plan=(p={})=>E.onboardingPlan(E.normalize({...base,...p},'k'),{today,stores});
+test('timeline lists the 7 stages in order and opens inside a 4 month target',()=>{let p=plan();a.deepEqual(p.steps.map(s=>s.title),['Funding check','Site check','Offer','Agreement','Fit-out','Training','Opening']);a.ok(p.openWeek<=p.weeks);a.equal(p.flags.length,0);for(let i=1;i<7;i++)a.ok(p.steps[i].start>p.steps[i-1].end);});
+test('fit-out, training and opening are worked back from the launch month',()=>{let p=plan({launch:6});a.equal(p.steps[6].end,p.weeks);a.ok(p.steps[4].start>p.steps[3].end+1);});
+test('training block states the preferred language',()=>{a.match(plan({language:'Hindi'}).training.text,/^Training in Hindi/);a.match(plan({language:'Kannada'}).training.text,/Kannada/);a.match(plan({language:null}).training.text,/to be confirmed/);});
+test('new-to-retail partner gets supervised shifts at the existing store in their city',()=>{let p=plan({city:'Belagavi',pin:'590101',experience:0});a.equal(p.training.weeks,3);a.match(p.training.text,/ST-10/);});
+test('"before Diwali" is flagged when the timeline does not fit',()=>{let p=plan({notes:'Wants to open before Diwali',launch:3});a.equal(p.deadline.phrase,'before Diwali');a.ok(p.flags.some(f=>/before Diwali.*8 Nov 2026/.test(f)));a.ok(p.needed.some(n=>/opening date/.test(n)));});
+test('a month deadline that fits raises no flag',()=>{let p=plan({notes:'Hoping to open by April 2027',launch:4});a.equal(p.deadline.date,'30 Apr 2027');a.equal(p.flags.length,0);});
+test('an undatable deadline asks for the date',()=>a.ok(plan({notes:'Must open before Ugadi'}).flags.some(f=>/cannot date/.test(f))));
+test('1-month launch is flagged with an earliest realistic opening',()=>a.ok(plan({launch:1}).flags.some(f=>/Earliest realistic opening/.test(f))));
+test('still-needed list reflects the site, language and data gaps',()=>{let p=plan({space:'Owned',area:null,floor:'Upper',language:null,investment:'40 lakhs'});for(let rx of [/Ownership document/,/size of the site/,/Actual floor.*Upper/,/Training language/,/Confirmed Investment.*40 lakhs/])a.ok(p.needed.some(n=>rx.test(n)),String(rx));});
+test('notes never change the decision',()=>{let r=x=>E.assess([E.normalize({...base,...x},'k')],[{id:'T',city:'Mysuru',state:'Karnataka',pins:['570001'],slots:1,priority:'High'}],[],{},E.defaultPolicy)[0].status;a.equal(r({notes:'Wants to open before Diwali'}),r({notes:''}));});
