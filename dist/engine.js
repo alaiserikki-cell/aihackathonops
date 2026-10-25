@@ -41,6 +41,16 @@ function openSlots(territories,stores,results){let cap=territoryCapacity(territo
 function onboardingOrder(results,territories){let pr=a=>priorityRank(territories.find(t=>t.id===a.territory)?.priority);return results.filter(a=>a.status==='Recommended').sort((a,b)=>pr(a)-pr(b)||(Number.isFinite(a.launch)?a.launch:Infinity)-(Number.isFinite(b.launch)?b.launch:Infinity)||b.score-a.score||String(a.id).localeCompare(String(b.id)));}
 function policyErrors(p){let errors=[];for(let f of ['minInvestment','minArea','minLaunch','targetLaunch'])if(!(Number(p[f])>0)||!Number.isFinite(Number(p[f])))errors.push(labels[f]||f);if(Number(p.targetLaunch)<Number(p.minLaunch))errors.push('Target latest launch must be at least the minimum feasible launch.');return errors;}
 const defaultPolicy={model:'industry-v2',minInvestment:30,minArea:400,minLaunch:3,targetLaunch:6};
+// Applicant-level gates that do not depend on location: site, brand minimums, launch timing.
+function personalGaps(a,settings){let g=[];if(a.space==='Not yet identified'||!a.area||!['Ground','First','Other confirmed'].includes(a.floor))g.push({status:'Site needed',text:'Confirm an identified site, positive usable area and actual floor.'});
+else if((settings.minInvestment!==''&&settings.minInvestment!=null&&a.investment<Number(settings.minInvestment))||(settings.minArea!==''&&settings.minArea!=null&&a.area<Number(settings.minArea)))g.push({status:'Requirements not met',text:'Investment or area is below the configured brand minimum.'});
+if(!g.length&&settings.minLaunch!==''&&settings.minLaunch!=null&&(!Number.isFinite(a.launch)||a.launch<Number(settings.minLaunch)))g.push({status:'Timeline review',text:'Confirm a target launch that meets the configured minimum preparation time.'});return g;}
+// Up to 2 open pins in the same city: territory has a free slot, pin has no existing or recommended store. Suggestion only.
+function redirectOptions(a,out,territories,stores){let cap=territoryCapacity(territories,stores).byTerritory,rec=out.filter(r=>r.status==='Recommended'),taken=new Set([...stores.map(s=>String(s.pin)),...rec.map(r=>r.pin)]),options=[];
+for(let t of territories.filter(t=>t.city===a.city&&(cap[t.id]||0)-rec.filter(r=>r.territory===t.id).length>0).sort((x,y)=>priorityRank(x.priority)-priorityRank(y.priority)||(y.id===a.territory)-(x.id===a.territory)||String(x.id).localeCompare(String(y.id))))
+ for(let p of [...new Set(t.pins)].sort())if(options.length<2&&p!==a.pin&&/^\d{6}$/.test(p)&&!taken.has(p)&&territories.filter(x=>x.pins?.includes(p)).length===1)options.push({pin:p,territory:t.id,priority:t.priority||'Unknown'});return options;}
+function redirectText(options){let groups=[];for(let o of options){let g=groups.find(g=>g.territory===o.territory);if(g)g.pins.push(o.pin);else groups.push({territory:o.territory,priority:o.priority,pins:[o.pin]});}
+return groups.map(g=>(g.pins.length>1?'Pins '+g.pins.join(' and '):'Pin '+g.pins[0])+' in '+g.territory+' ('+g.priority+' priority)').join('; ')+(options.length>1?' are':' is')+' open. Suggestion only: the applicant must agree and confirm a site there.';}
 function assess(apps,territories,stores,reference,settings={}){let v2=settings.model==='industry-v2';let idCounts=Object.create(null);apps.forEach(a=>{let id=String(a.id||'').trim().toUpperCase();idCounts[id]=(idCounts[id]||0)+1;});let out=apps.map(a=>{let reasons=[],missing=[],components=[],tier=cities[a.city]?.[1],pending=a.pending||[];
 const comp=(key,points,max,weight,detail)=>{components.push({key,label:labels[key]||key,points,max,weight,contribution:points===null?0:points/max*weight,detail});};
 if(v2){
@@ -70,18 +80,20 @@ if(a.floor==='Ground'&&/\b(?:shop|space|premises|unit)\b.{0,30}\b(?:first|upper|
 if(a.space==='Not yet identified'&&(a.area>0||['Ground','First'].includes(a.floor)))reasons.push('Site details are present although space is not yet identified.');
 if(pending.length)reasons.push(`${pending.length} proposed data correction${pending.length>1?'s':''} awaiting confirmation.`);
 if(missing.length)reasons.push('Missing: '+missing.join(', ')+'.');
-const matches=territories.filter(t=>t.pins?.includes(a.pin));let t=matches.length===1?matches[0]:null,status='Eligible';
+const matches=territories.filter(t=>t.pins?.includes(a.pin));let t=matches.length===1?matches[0]:null,status='Eligible',uncovered=false;
+let policyOK=!v2||(Number(settings.minInvestment)>0&&Number(settings.minArea)>0&&Number(settings.minLaunch)>0&&Number(settings.targetLaunch)>=Number(settings.minLaunch));
+let gaps=personalGaps(a,settings);
 if(reasons.length)status='Clarification needed';
 else if(stores.some(s=>String(s.pin)===a.pin)){status='Location unavailable';reasons.push('An existing store already occupies this pin code. Choose a different pin code.');}
-else if(!t||matches.length>1){status='Territory review';reasons.push(matches.length>1?'Pin code appears in more than one territory. Resolve territory overlap.':'Pin code is not covered by an uploaded territory.');}
+else if(!t||matches.length>1){status='Territory review';uncovered=!matches.length;reasons.push(matches.length>1?'Pin code appears in more than one territory. Resolve territory overlap.':'Pin code is not covered by an uploaded territory.');}
 else if(t.issues?.length||t.city!==a.city||t.state!==a.state||!Number.isInteger(t.slots)||t.slots<0){status='Territory review';reasons.push('Territory details are incomplete, invalid or conflict with the application.');}
-else if(v2&&(!(Number(settings.minInvestment)>0)||!(Number(settings.minArea)>0)||!(Number(settings.minLaunch)>0)||!(Number(settings.targetLaunch)>=Number(settings.minLaunch)))){status='Policy needed';reasons.push('Configure a positive investment requirement, area minimum and feasible launch window before allocating. These are brand assumptions, not universal standards.');}
-else if(a.space==='Not yet identified'||!a.area||!['Ground','First','Other confirmed'].includes(a.floor)){status='Site needed';reasons.push('Confirm an identified site, positive usable area and actual floor.');}
-else if((settings.minInvestment!==''&&settings.minInvestment!=null&&a.investment<Number(settings.minInvestment))||(settings.minArea!==''&&settings.minArea!=null&&a.area<Number(settings.minArea))){status='Requirements not met';reasons.push('Investment or area is below the configured brand minimum.');}
-else if(settings.minLaunch!==''&&settings.minLaunch!=null&&(!Number.isFinite(a.launch)||a.launch<Number(settings.minLaunch))){status='Timeline review';reasons.push('Confirm a target launch that meets the configured minimum preparation time.');}
-return {...a,tier,model:v2?'industry-v2':'legacy',grade:v2?(components.some(c=>c.points===null)?'U':score>=80?'A':score>=65?'B':score>=50?'C':'D'):null,territory:t?.id||null,components,score:+score.toFixed(1),high:+high.toFixed(1),status,reasons,missing};});
+else if(!policyOK){status='Policy needed';reasons.push('Configure a positive investment requirement, area minimum and feasible launch window before allocating. These are brand assumptions, not universal standards.');}
+else if(gaps.length){status=gaps[0].status;reasons.push(gaps[0].text);}
+if(['Location unavailable','Territory review'].includes(status)&&policyOK)for(let g of gaps)reasons.push('Also: '+g.text);
+return {...a,tier,uncovered,gaps:gaps.map(g=>g.status),model:v2?'industry-v2':'legacy',grade:v2?(components.some(c=>c.points===null)?'U':score>=80?'A':score>=65?'B':score>=50?'C':'D'):null,territory:t?.id||null,components,score:+score.toFixed(1),high:+high.toFixed(1),status,reasons,missing};});
 let usedPins=new Set(stores.map(s=>String(s.pin))),counts=Object.create(null);let candidates=out.filter(a=>a.status==='Eligible').sort((a,b)=>b.score-a.score||(Number.isFinite(a.launch)?a.launch:Infinity)-(Number.isFinite(b.launch)?b.launch:Infinity)||String(a.id).localeCompare(String(b.id))||a.key.localeCompare(b.key));
 for(let a of candidates){let t=territories.find(t=>t.id===a.territory);if(usedPins.has(a.pin)){a.status='Waitlisted';a.reasons.push('A higher-ranked or tie-break-winning candidate is recommended for this pin code.');}else if((counts[t.id]||0)>=t.slots){a.status='Waitlisted';a.reasons.push('All available slots in this territory have provisional recommendations.');}else{a.status='Recommended';usedPins.add(a.pin);counts[t.id]=(counts[t.id]||0)+1;a.reasons.push('Screening requirements are satisfied and the partner ranks within available territory capacity. Declared funds and premises still require verification; this is not final approval.');}}
+for(let a of out)if((a.status==='Waitlisted'||(a.status==='Location unavailable'&&!a.gaps.length)||(a.status==='Territory review'&&a.uncovered&&!a.gaps.length))&&a.city in cities){let options=redirectOptions(a,out,territories,stores);if(options.length){a.redirect=options;a.reasons.push(redirectText(options));}}
 return out;}
 function parseUpdate(text,apps){
  let t=String(text).trim(),lower=t.toLowerCase();
@@ -127,5 +139,5 @@ for(let [key,task] of Object.entries(s.tasks)){if(!keys.has(key)||!obj(task)||Ob
 for(let [key,dates] of Object.entries(s.taskDates)){if(!keys.has(key)||!obj(dates)||Object.entries(dates).some(([k,v])=>!/^([0-6])$/.test(k)||!str(v)||!/^$|^\d{4}-\d{2}-\d{2}$/.test(v)))return false;}
 if(s.audit.some(a=>!obj(a)||!str(a.text)||!str(a.at)||!Number.isFinite(Date.parse(a.at))))return false;return true;
 }catch(e){return false;}}
-const api={priorityRank,openSlots,onboardingOrder,territoryCapacity,policyErrors,defaultPolicy,parseNumber,invalidateTasks,validState,fields,numeric,cities,labels,normalize,percentile,band,benchmarks,assess,parseUpdate,businessPoints};if(typeof module!=='undefined')module.exports=api;root.Engine=api;
+const api={personalGaps,redirectOptions,priorityRank,openSlots,onboardingOrder,territoryCapacity,policyErrors,defaultPolicy,parseNumber,invalidateTasks,validState,fields,numeric,cities,labels,normalize,percentile,band,benchmarks,assess,parseUpdate,businessPoints};if(typeof module!=='undefined')module.exports=api;root.Engine=api;
 })(typeof globalThis!=='undefined'?globalThis:this);
