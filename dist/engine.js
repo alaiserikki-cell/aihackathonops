@@ -120,7 +120,7 @@ function parseUpdate(text,apps){
  if(/(?:^|\s)[−-]\s*\d|\d\s*(?:[-–—]|to)\s*\d|\b(?:about|around|approximately|maybe|roughly|or|possibly|not|isn't|isnt|doesn't|don't|no longer)\b/i.test(body))return {error:'This statement is negative, approximate or ambiguous. Please give one confirmed non-negative value for each field. I have not changed anything.'};
  if(/\bground[ -]floor\b/i.test(body))patch.floor='Ground';if(/\bfirst[ -]floor\b/i.test(body)){if(patch.floor)return {error:'Two floors were mentioned. Confirm the actual floor.'};patch.floor='First';}
  if(/\b(?:upper|second|third)[ -]floor\b/i.test(body))return {error:'Please confirm the actual floor in Edit application. Upper does not necessarily mean first floor.'};
- if(/\b(?:owned|owns|own)\b/i.test(body))patch.space='Owned';if(/\b(?:rented|renting|leased)\b/i.test(body)){if(patch.space)return {error:'Both ownership and rental were mentioned. Which applies to this site?'};patch.space='Rented';}
+ if(/\b(?:owned|owns|own)\b/i.test(body))patch.space='Owned';if(/\b(?:rented|renting|leased|on rent|for rent|on lease|rental)\b/i.test(body)){if(patch.space)return {error:'Both ownership and rental were mentioned. Which applies to this site?'};patch.space='Rented';}
  let inv=body.match(/\b(?:investment|invest|capacity|budget)\b(?:\s+(?:capacity|is|to|of|now|has|can|increased|available))*\s*[:=]?\s*((?:₹|rs\.?|inr)?\s*\d[\d,]*(?:\.\d+)?\s*(?:lakhs?|lacs?|l\b|crores?|cr\b|rupees?|inr|rs\.?)?)/i);
  if(inv&&/^\s*(?:sq\.?\s*ft|sqft|square feet|months?|years?)\b/i.test(body.slice(inv.index+inv[0].length)))return {error:'That unit does not describe investment. Confirm the investment in lakh or rupees.'};
  if(inv){let p=parseNumber('investment',inv[1]);patch.investment=p.value??p.proposed;if(patch.investment===null)return {error:'Confirm the investment amount and units, for example 25 lakh or ₹25,00,000.'};}
@@ -134,10 +134,11 @@ function parseUpdate(text,apps){
  if(/\barea\b/i.test(body)&&!('area'in patch))return {error:'Confirm the area in square feet; no part of this update has been applied.'};
  let pin=body.match(/\bpin(?:\s+code)?\s*(?:(?:is|to|now)\s*)?[:=]?\s*(\d{6})\b/i);if(pin)patch.pin=pin[1];
  for(let lang of ['English','Kannada','Hindi'])if(new RegExp('\\b'+lang+'\\b','i').test(body))patch.language=lang;
- if(!Object.keys(patch).length)return {error:'Please give a specific confirmed update, such as investment is 25 lakh, area is 500 sq ft, launch in 3 months, experience is 4 years, rented, ground floor, pin code or training language. I have not changed anything.'};
+ let siteFound=/\b(?:found|got|secured|identified|located|finali[sz]ed)\b.{0,50}\b(?:space|shop|site|premises|unit|place|store)\b/i.test(body);
+ if(!Object.keys(patch).length&&!siteFound)return {error:'Please give a specific confirmed update, such as investment is 25 lakh, area is 500 sq ft, launch in 3 months, experience is 4 years, rented, ground floor, pin code or training language. I have not changed anything.'};
  if(/\b(?:investment|budget|capacity|invest)\b/i.test(body)&&!('investment'in patch))return {error:'The investment amount is unclear. Please give a number with lakh or rupee units.'};
  if(/\b(?:sq metres?|square met(?:er|re)s?|sqm)\b/i.test(body))return {error:'Please give the confirmed area in square feet. I have not converted or applied this update.'};
- const entries=Object.entries(patch);return {key:a.key,id:a.id,patch,hypothetical,...(entries.length===1?{field:entries[0][0],value:entries[0][1]}:{})};
+ const entries=Object.entries(patch);return {key:a.key,id:a.id,patch,hypothetical,siteFound,...(entries.length===1?{field:entries[0][0],value:entries[0][1]}:{})};
 }
 function invalidateTasks(tasks,patch){let start=7;if(['id','name','investment'].some(k=>k in patch))start=0;else if(['city','state','pin','space','area','floor','launch','notes'].some(k=>k in patch))start=1;else if(['language','experience','business'].some(k=>k in patch))start=5;let next={...tasks};for(let i=start;i<7;i++)next[i]=false;return next;}
 function validState(s){try{
