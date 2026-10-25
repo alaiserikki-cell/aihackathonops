@@ -1,7 +1,7 @@
-# FranchiseOS
-A no-login browser workspace for franchise partner screening, territory allocation and onboarding.
+# Right Pin
+By Team Pin Drop. Right Pin screens franchise partner applications for a retail brand in Karnataka, allocates territories by pin code and plans each onboarding. Every applicant gets one clear decision (Approve, Conditional, Redirect, Waitlist, Hold or Not eligible), a one-line reason and a next step. No login, no backend, no LLM.
 
-Live app: https://franchise-ops-ravi.cleantapir32.chatgpt.site
+Live app (opens on the Decisions tab; use Load sample data for a 20-application judge-style workbook): https://franchise-ops-ravi.cleantapir32.chatgpt.site
 
 ## Run and test
 Serve `dist/` with a static HTTP server, for example `python3 -m http.server 8080 --directory dist`. No build or paid API is required. JSZip is vendored. Run `node --test tests/*.test.cjs` or `npm test`.
@@ -11,15 +11,15 @@ Industry-informed screening v2 is a **proposed pilot policy**, not an accepted u
 
 Funding and area contributions are capped once requirements are met. Owned and rented premises receive equal points. Floors must be clarified and assessed; no generic ground-floor bonus. Grades A/B/C/D/U are proposed triage bands. Failed mandatory requirements and location rules override grades. Declared inputs do not establish verified funds, real identity or a viable site. See Scoring & rules for exact anchors.
 
-The original 60/10/30 percentile model is retained in applicant detail/export for comparison. It is recomputed after parsing fixes. The models are different scales, not percentage improvement in candidate quality.
+The original 60/10/30 percentile model is no longer shown in the app; its score is kept only in the CSV export (Legacy score column) for comparison. It is recomputed after parsing fixes. The models are different scales, not percentage improvement in candidate quality.
 
 ## Workflow
 Upload the supplied XLSX, including incomplete records. Row 3 is excluded only when the sheet labels it as an example. Confirm proposed corrections and resolve contradictions. Inspect reasons, recorded-to-possible score ranges and recommendations. Track recommended partners through sequenced funding, site, offer, agreement, fit-out, training and opening checks. Material changes reset dependent attestations.
 
 One recommended partner per pin; existing-store pins and territory slots are protected. Invalid/overlapping territory capacity is excluded from the overview's allocatable slots. Missing input is retained for clarification rather than dropped.
 
-## Franchise bot
-Use the floating Ask Franchise bot button, the sidebar, or Ask bot in an applicant's details. Ask general policy/assumption questions, request portfolio summaries, compare applicants, inspect reasons, draft clarification questions and follow up without repeating the selected ID. What-if changes are read-only previews showing affected recommendations. Explicit changes produce a confirmation proposal. Ambiguous ranges, negative facts, mismatched units and unparsed explicit fields trigger clarification. Supported language patterns are documented by examples; this is a grounded rule-based assistant, not an unrestricted LLM. It has no outside rent, demand or profitability data and sends no applicant messages.
+## Right Pin bot
+Use the floating Ask Right Pin button, the sidebar, or Ask bot in an applicant's details. Ask general policy/assumption questions, request portfolio summaries, compare applicants, inspect reasons, draft clarification questions and follow up without repeating the selected ID. What-if changes are read-only previews showing affected recommendations. Explicit changes produce a confirmation proposal. Ambiguous ranges, negative facts, mismatched units and unparsed explicit fields trigger clarification. Supported language patterns are documented by examples; this is a grounded rule-based assistant, not an unrestricted LLM. It has no outside rent, demand or profitability data and sends no applicant messages.
 
 ## Test data and findings
 `dist/qa-test-data.xlsx`: 39 synthetic applications, 5 territories, the protected existing-store list, legacy expectations and a revised rescoring snapshot.

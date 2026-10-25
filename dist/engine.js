@@ -196,6 +196,7 @@ function onboardingPlan(a,{today=new Date(),stores=[],settings=defaultPolicy}={}
 // Judge-facing decision label, one-line reason and next step, mapped from the internal status. Never reads free text.
 const shortField={id:'unique ID',name:'name',city:'city',state:'state',pin:'pin code',investment:'investment',experience:'experience',space:'space status',area:'site size',floor:'floor',launch:'launch month',language:'training language'};
 const firstSentence=s=>String(s||'').match(/^.*?\.(?=\s|$)/)?.[0]||String(s||'');
+const reasonOnly=s=>String(s||'').replace(/\s*Unblocks[^.]*\./,'').trim();
 const unblockOf=s=>String(s||'').match(/Unblocks[^.]*\./)?.[0]||'';
 function holdNeed(a){let p=a.primary||'';if(a.status==='Clarification needed'){if(/appears \d+ times/.test(p))return 'unique ID';if(a.pending?.length)return 'confirmed '+[...new Set(a.pending.map(x=>shortField[x.field]))].join(', ');if(a.missing?.length)return [...new Set(a.missing.map(m=>shortField[Object.keys(labels).find(k=>labels[k]===m)]||m))].join(', ');if(/notes say|Not yet identified" but/.test(p))return 'site confirmation';if(/does not match|not 6 digits/.test(p))return 'pin check';if(/language/.test(p))return 'training language';return 'clarification';}
  if(a.status==='Site needed')return a.space==='Not yet identified'?'a site':!a.area?'site size':'actual floor';if(a.status==='Timeline review')return 'feasible launch date';if(a.status==='Territory review')return 'territory fix';if(a.status==='Policy needed')return 'brand policy';return 'review';}
@@ -203,9 +204,9 @@ function decision(a){let st=a.status,unblock=unblockOf(a.primary);
  if(st==='Recommended'){let cond=a.components.filter(c=>c.points===null).map(c=>c.key==='business'?'business history':shortField[c.key]||c.label.toLowerCase());if(!['Kannada','English','Hindi'].includes(a.language))cond.push('training language');let funds=`Start the funding check: proof of funds for ₹${num(a.investment)} lakh.`;
   return cond.length?{label:'Conditional',need:cond.join(', '),headline:`Approved subject to confirming ${cond.join(' and ')}. ${firstSentence(a.primary)}`,next:`Confirm ${cond.join(' and ')}, then ${funds[0].toLowerCase()+funds.slice(1)}`}:{label:'Approve',headline:a.primary,next:funds};}
  if(a.redirect)return {label:'Redirect',headline:firstSentence(a.primary)+' '+firstSentence(a.redirectText),next:`Offer pin ${a.redirect.map(o=>o.pin).join(' or ')} (suggestion only; the applicant must confirm a site there).`};
- if(st==='Waitlisted')return {label:'Waitlist',headline:a.primary,next:'Keep on the waitlist. '+(unblock||'Moves up if a slot opens.')};
- if(st==='Requirements not met')return {label:'Not eligible',headline:a.primary,next:'Decline for now. '+unblock};
- if(st==='Location unavailable'||(st==='Territory review'&&a.uncovered))return {label:'Not eligible',headline:a.primary,next:a.gaps?.length?'Decline for now. Fix the applicant gaps first, then look for an open pin.':`Decline for this pin. ${unblock}`};
- let need=holdNeed(a);return {label:`Hold (needs ${need})`,need,headline:a.primary,next:unblock||'Resolve the reason above.'};}
+ if(st==='Waitlisted')return {label:'Waitlist',headline:reasonOnly(a.primary),next:'Keep on the waitlist. '+(unblock||'Moves up if a slot opens.')};
+ if(st==='Requirements not met')return {label:'Not eligible',headline:reasonOnly(a.primary),next:'Decline for now. '+unblock};
+ if(st==='Location unavailable'||(st==='Territory review'&&a.uncovered))return {label:'Not eligible',headline:reasonOnly(a.primary),next:a.gaps?.length?'Decline for now. Fix the applicant gaps first, then look for an open pin.':`Decline for this pin. ${unblock}`};
+ let need=holdNeed(a);return {label:`Hold (needs ${need})`,need,headline:reasonOnly(a.primary),next:unblock||'Resolve the reason above.'};}
 const api={decision,holdNeed,onboardingPlan,deadlineFromNotes,planSteps,personalGaps,redirectOptions,priorityRank,openSlots,onboardingOrder,territoryCapacity,policyErrors,defaultPolicy,parseNumber,invalidateTasks,validState,fields,numeric,cities,labels,normalize,percentile,band,benchmarks,assess,parseUpdate,businessPoints};if(typeof module!=='undefined')module.exports=api;root.Engine=api;
 })(typeof globalThis!=='undefined'?globalThis:this);
