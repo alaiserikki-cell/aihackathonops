@@ -3,7 +3,7 @@ By Team Pin Drop. Submission for Case 1 of the AI x Ops Hackathon: franchise par
 
 Right Pin reads the Applications and Territories sheets, checks them against the 10 fixed existing stores, and gives every application one decision, a one-line reason and a next step. Partners who move forward get a week-by-week onboarding plan with training in their preferred language. A rule-based assistant answers follow-up questions and takes new information. No login, no backend, no LLM.
 
-Live app: https://franchise-ops-ravi.cleantapir32.chatgpt.site (backup: deploy the same repo to Vercel, see below).
+Live app: https://right-pin.vercel.app (no login; redeploys automatically from `main`).
 
 ## Try it in 2 minutes
 1. Open the app and click **Load sample data** (20 judge-style applications with planted traps), or **Upload workbook** with your own file in the template format.
@@ -65,8 +65,8 @@ Uses the Node built-in test runner (`tests/*.test.cjs`); no dependencies to inst
 Regenerate the sample workbook with `node scripts/make-judge-sample.cjs`.
 
 ## Deploy
-- Current host: static hosting of `dist/` (see `.openai/hosting.json`).
-- Vercel (backup link): import this repository in Vercel. `vercel.json` sets `outputDirectory` to `dist` with no build or install step.
+- Vercel: https://right-pin.vercel.app is the production URL. `vercel.json` sets `outputDirectory` to `dist` with no build or install step, and every push to `main` redeploys.
+- The earlier link (https://franchise-ops-ravi.cleantapir32.chatgpt.site) was set up from the original repository and does not include these changes.
 
 ## Files
 - `dist/template.xlsx`: the official template.
