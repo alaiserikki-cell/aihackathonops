@@ -322,9 +322,9 @@ function createHandler({ store, marketStore, marketMapStore, marketLocationData 
             const clientId = req.socket?.remoteAddress || 'local-client';
             const persistResearch = async record => {
               try { await marketResearchStore.save(record); return null; }
-              catch (error) {
-                if (!/^pin:\d{6}$/.test(geographyId)) throw error;
-                return 'This answer was generated from the current verified context but could not be cached because PIN research records are not yet linked to a Neon geography row.';
+              catch {
+                // Search results can carry IDs (e.g. census district codes) with no Neon geography row; keep the answer and skip the cache.
+                return 'This answer was generated from the current verified context but could not be cached because this area is not yet linked to a Neon geography row.';
               }
             };
             if (researchMatch[2] === 'research') {
