@@ -258,3 +258,30 @@ test('Gemini gets rounded, human-readable figures instead of raw floats', () => 
   const out = readableFigures({ metrics: { populationDensity: { value: 554.0943640537497, unit: 'people/km²' }, apparelExpenditure: { value: 291698337916.8, unit: 'INR/year' }, population: { value: 72147030, unit: 'people' } } });
   assert.deepEqual(out, ['population density: 554 people/km²', 'apparel expenditure: ₹29,169.83 crore per year', 'population: 7.21 crore people']);
 });
+
+function supportedPayload(cards, supports) {
+  const chunks = [{ web: { uri: 'https://example.org/mall-report', title: 'Mall report' } }, { web: { uri: 'https://example.org/other', title: 'Other' } }];
+  return response({ candidates: [{ content: { parts: [{ text: JSON.stringify({ cards }) }] }, groundingMetadata: { groundingChunks: chunks, groundingSupports: supports } }] });
+}
+
+test('research cards may quote web numbers only from grounded sentences backed by their own sources', async () => {
+  const kept = { headline: 'Mall occupancy is high', insight: 'The city mall reports 99.7% occupancy in 2026.', evidenceUrls: ['https://example.org/mall-report'], confidence: 'high', referenceDate: null, implication: 'Prioritise mall units.' };
+  const unbacked = { headline: 'Rents are rising', insight: 'Rents grew 42% this year.', evidenceUrls: ['https://example.org/mall-report'], confidence: 'medium', referenceDate: '2026', implication: 'Budget for rent.' };
+  const supports = [
+    { segment: { text: 'The city mall reports 99.7% occupancy in 2026.' }, groundingChunkIndices: [0] },
+    { segment: { text: 'Rents vary widely across the listed retail streets.' }, groundingChunkIndices: [1] }
+  ];
+  const service = createMarketResearchService({ apiKey: 'secret', fetchImpl: async () => supportedPayload([kept, unbacked], supports) });
+  const result = await service.researchLocation(validContext);
+  assert.equal(result.ok, true);
+  assert.deepEqual(result.cards.map(card => card.headline), ['Mall occupancy is high']);
+  assert.match(result.cards[0].referenceDate, /^Retrieved /);
+});
+
+test('research cards without a retrieved source are still rejected', async () => {
+  const card = { headline: 'Invented', insight: 'Shoppers prefer premium labels.', evidenceUrls: ['https://invented.example'], confidence: 'high', referenceDate: '2026', implication: 'Go premium.' };
+  const service = createMarketResearchService({ apiKey: 'secret', fetchImpl: async () => supportedPayload([card], []) });
+  const result = await service.researchLocation(validContext);
+  assert.equal(result.ok, false);
+  assert.equal(result.error.code, 'invalid_response');
+});

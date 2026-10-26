@@ -89,8 +89,9 @@ function shapeContextCards(input, citations = [], supports = []) {
     const implication = safeText(card.implication, 300);
     const evidenceUrls = cardSources(card, citations, supports);
     const confidence = ['low', 'medium', 'high'].includes(card.confidence) ? card.confidence : null;
-    const referenceDate = safeText(card.referenceDate, 40);
-    if (!headline || !insight || !implication || !confidence || !referenceDate || !evidenceUrls.length) continue;
+    // Notes often omit a publication date; the service stamps the retrieval date, so a missing date is not a reason to drop a sourced card.
+    const referenceDate = safeText(card.referenceDate, 40) || 'Publication date not stated';
+    if (!headline || !insight || !implication || !confidence || !evidenceUrls.length) continue;
     output.push({ headline, insight, evidenceUrls, confidence, referenceDate, implication });
     if (output.length >= 7) break;
   }
@@ -120,13 +121,15 @@ function readableFigures(context) {
   return out;
 }
 
-function hasOnlyContextNumbers(text, context) {
+// Every number in a claim must come from the deterministic context or, for research cards, from a grounded
+// sentence (Gemini groundingSupports) that is backed by one of the card's own retrieved sources.
+function hasOnlyContextNumbers(text, context, groundedText = '') {
   const tokens = value => [...String(value).matchAll(/(?<![\d.,])[-+]?(?:\d{1,3}(?:,\d{2,3})+|\d+)(?:\.\d+)?%?/gu)].map(match => {
     const token = match[0], percent = token.endsWith('%');
     const number = Number(token.replace(/[,%]/g, ''));
     return Number.isFinite(number) ? `${Object.is(number, -0) ? 0 : number}${percent ? '%' : ''}` : null;
   }).filter(value => value !== null);
-  const contextNumbers = new Set(tokens(JSON.stringify(context)));
+  const contextNumbers = new Set([...tokens(JSON.stringify(context)), ...tokens(groundedText)]);
   const claims = safeText(text, 10000).replace(/\[\s*\d+\s*\]/g, '');
   return tokens(claims).every(value => contextNumbers.has(value));
 }
@@ -259,8 +262,10 @@ function createMarketResearchService(options = {}) {
     if (!result.ok) return result;
     const parsed = parseJson(result.text);
     if (!parsed || !Array.isArray(parsed.cards)) return fail('invalid_response', 'Research response did not match the expected card format.');
-    const cards = shapeContextCards(parsed.cards, result.citations, result.supports || [])
-      .filter(card => hasOnlyContextNumbers(`${card.headline} ${card.insight} ${card.implication}`, clean))
+    const supports = result.supports || [];
+    const groundedFor = card => supports.filter(support => support.urls.some(url => card.evidenceUrls.includes(url))).map(support => support.text).join(' ');
+    const cards = shapeContextCards(parsed.cards, result.citations, supports)
+      .filter(card => hasOnlyContextNumbers(`${card.headline} ${card.insight} ${card.implication}`, clean, groundedFor(card)))
       .map(card => ({ ...card, referenceDate: `Retrieved ${result.retrievedAt.slice(0, 10)}; publication date not verified` }));
     if (!cards.length) return fail('invalid_response', 'Research response contained no valid cards with verified citations.');
     return { ok: true, cards, citations: result.citations, retrievedAt: result.retrievedAt, usage: result.usage };
