@@ -11,6 +11,9 @@ http.createServer(async (req, res) => {
   if (api) {
     const file = path.join(root, 'api', api[1] + '.js');
     if (!fs.existsSync(file)) { res.statusCode = 404; return res.end('{"error":"Not found."}'); }
+    // API_DELAY_MS simulates a slow cold start when testing sync timing.
+    const delay = Number(process.env.API_DELAY_MS || 0);
+    if (delay) await new Promise(r => setTimeout(r, delay));
     return require(file)(req, res);
   }
   const rel = decodeURIComponent(url.pathname === '/' ? '/index.html' : url.pathname), file = path.join(dist, rel);
