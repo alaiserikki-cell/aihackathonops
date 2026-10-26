@@ -38,13 +38,14 @@
 
   const observer = 'IntersectionObserver' in root ? new IntersectionObserver(entries => {
     for (const entry of entries) {
-      if (!entry.isIntersecting) continue;
+      // Tall panels (long score tables) can never reach the ratio threshold, so also reveal once a quarter of the viewport is covered.
+      if (!entry.isIntersecting || (entry.intersectionRatio < 0.12 && entry.intersectionRect.height < (entry.rootBounds?.height || root.innerHeight) * 0.25)) continue;
       entry.target.classList.add('is-in');
       entry.target.querySelectorAll?.(COUNT).forEach(countUp);
       if (entry.target.matches(COUNT)) countUp(entry.target);
       observer.unobserve(entry.target);
     }
-  }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' }) : null;
+  }, { threshold: [0, 0.02, 0.05, 0.12], rootMargin: '0px 0px -6% 0px' }) : null;
 
   function enhance(scope) {
     if (reduced || !observer || doc.body.classList.contains('expansion-fullscreen')) return;

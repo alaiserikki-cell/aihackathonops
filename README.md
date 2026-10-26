@@ -24,7 +24,9 @@ Funding and area contributions are capped once requirements are met. Owned and r
 The original 60/10/30 percentile model is retained in applicant detail/export for comparison. It is recomputed after parsing fixes. The models are different scales, not percentage improvement in candidate quality.
 
 ## Workflow
-Upload the supplied XLSX, including incomplete records. Row 3 is excluded only when the sheet labels it as an example. Confirm proposed corrections and resolve contradictions. Inspect reasons, recorded-to-possible score ranges and recommendations. Track recommended partners through sequenced funding, site, offer, agreement, fit-out, training and opening checks. Material changes reset dependent attestations.
+Use **Upload & score** (sidebar, or the upload card on the Overview landing page). Drop one workbook or select several at once for a bulk upload. Each workbook is scored instantly and on its own: the results show every applicant's score, grade, territory fit, decision, reason and next action, with a CSV download per file or for the whole batch. An upload **replaces** the workspace; it is never merged into earlier data. In a bulk upload the first readable file becomes the active workspace, and `Open in workspace` switches to another file. Proposed unit corrections (for example "25 lakhs" or "1.5 Cr") are applied automatically by default and the original values are kept; untick the option to confirm them manually in Data review.
+
+The supplied XLSX can include incomplete records. Row 3 is excluded only when the sheet labels it as an example. Resolve remaining contradictions. Inspect reasons, recorded-to-possible score ranges and recommendations. Track recommended partners through sequenced funding, site, offer, agreement, fit-out, training and opening checks. Material changes reset dependent attestations.
 
 One recommended partner per pin; existing-store pins and territory slots are protected. Invalid/overlapping territory capacity is excluded from the overview's allocatable slots. Missing input is retained for clarification rather than dropped.
 
