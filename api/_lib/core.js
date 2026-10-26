@@ -28,9 +28,19 @@ async function requireWorkspace(db, id) {
   return ws;
 }
 
-async function log(db, id, ws, text) {
-  const audit = [{ at: new Date().toISOString(), text }, ...(ws.audit || [])].slice(0, MAX_AUDIT);
+// History entry: text plus optional applicant key/id, kind (import, update, settings, onboarding) and decision before -> after.
+async function log(db, id, ws, text, meta = {}) {
+  const audit = [{ at: new Date().toISOString(), text, ...meta }, ...(ws.audit || [])].slice(0, MAX_AUDIT);
   await db.setAudit(id, audit);
+}
+
+// Keeps history sent by the browser (for example offline changes being synced) if each entry is well formed.
+function cleanAudit(input) {
+  if (!Array.isArray(input)) return [];
+  const str = v => typeof v === 'string' ? v.slice(0, 500) : undefined;
+  return input.filter(e => e && typeof e.text === 'string' && Number.isFinite(Date.parse(e.at))).slice(0, MAX_AUDIT)
+    .map(e => Object.fromEntries(Object.entries({ at: e.at, text: e.text.slice(0, 1000), key: str(e.key), id: str(e.id), kind: str(e.kind), before: str(e.before), after: str(e.after),
+      labels: e.labels && typeof e.labels === 'object' && !Array.isArray(e.labels) ? Object.fromEntries(Object.entries(e.labels).filter(([, v]) => typeof v === 'string').slice(0, MAX_APPS)) : undefined }).filter(([, v]) => v !== undefined)));
 }
 
 function cleanSettings(settings) {
@@ -62,10 +72,14 @@ async function importWorkspace(db, id, body) {
   const candidate = { source: String(source).slice(0, 200), apps, territories, reference: E.benchmarks(apps), settings, tasks: {}, taskDates: {}, audit: [], warnings: Array.isArray(warnings) ? warnings.map(String).slice(0, 50) : [] };
   if (!E.validState(candidate)) throw bad('The workspace data is not valid. Re-upload the workbook in the template format.');
   const onboarding = cleanOnboarding(body.onboarding, new Set(apps.map(a => a.key)));
-  await db.saveWorkspace(id, { source: candidate.source, settings, warnings: candidate.warnings, audit: [] });
+  const kept = cleanAudit(body.audit);
+  await db.saveWorkspace(id, { source: candidate.source, settings, warnings: candidate.warnings, audit: kept });
   await db.replaceData(id, apps, territories, onboarding);
-  const ws = await db.getWorkspace(id);
-  await log(db, id, ws, `Imported ${apps.length} applications and ${territories.length} territories from ${candidate.source}.`);
+  if (!kept.length) {
+    // A fresh upload: record each applicant's first decision so every timeline has a starting point.
+    const labels = Object.fromEntries(assess(apps, territories, settings).map(r => [r.key, E.decision(r).label]));
+    await log(db, id, await db.getWorkspace(id), `Imported ${apps.length} applications and ${territories.length} territories from ${candidate.source}.`, { kind: 'import', labels });
+  }
   return loadState(db, id);
 }
 
@@ -88,14 +102,16 @@ async function patchApplication(db, id, { key, patch, why } = {}) {
   await db.putApp(id, app);
   const onboarding = await db.listOnboarding(id);
   if (onboarding[key]) await db.putOnboarding(id, key, { ...onboarding[key], tasks: E.invalidateTasks(onboarding[key].tasks, changed) });
-  await log(db, id, ws, `${app.id || key}: ${String(why || 'Confirmed update').slice(0, 200)}. ${E.decision(summary.before).label} → ${E.decision(summary.after).label}.`);
+  const beforeLabel = E.decision(summary.before).label, afterLabel = E.decision(summary.after).label, knock = summary.affected.map(a => `${a.id} ${E.decision(before.find(b => b.key === a.key)).label} → ${E.decision(a).label}`);
+  await log(db, id, ws, `${app.id || key}: ${String(why || 'Confirmed update').slice(0, 200)}. ${beforeLabel} → ${afterLabel}.${knock.length ? ' Knock-on: ' + knock.join('; ') + '.' : ''}`, { kind: 'update', key, id: app.id || key, before: beforeLabel, after: afterLabel });
+  for (const a of summary.affected) await log(db, id, await db.getWorkspace(id), `${a.id}: changed because ${app.id || key} was updated. ${E.decision(before.find(b => b.key === a.key)).label} → ${E.decision(a).label}.`, { kind: 'knock-on', key: a.key, id: a.id, before: E.decision(before.find(b => b.key === a.key)).label, after: E.decision(a).label });
   return { state: await loadState(db, id), summary: { text: summary.text, affected: summary.affected.map(a => a.id) } };
 }
 
 async function saveSettings(db, id, { settings } = {}) {
   const ws = await requireWorkspace(db, id), clean = cleanSettings(settings);
   await db.saveWorkspace(id, { source: ws.source, settings: clean, warnings: ws.warnings, audit: ws.audit });
-  await log(db, id, ws, 'Updated brand requirements and reassessed all applications.');
+  await log(db, id, ws, 'Updated brand requirements and reassessed all applications.', { kind: 'settings' });
   return loadState(db, id);
 }
 
@@ -116,7 +132,7 @@ async function saveOnboarding(db, id, { key, tasks, taskDates } = {}) {
   await db.putOnboarding(id, key, next);
   if (tasks) {
     const changedStep = [0, 1, 2, 3, 4, 5, 6].find(i => Boolean(current.tasks[i]) !== done(i));
-    if (changedStep !== undefined) await log(db, id, ws, `${result.id}: step ${changedStep + 1} ${done(changedStep) ? 'completed' : 'reopened'}.`);
+    if (changedStep !== undefined) await log(db, id, ws, `${result.id}: step ${changedStep + 1} ${done(changedStep) ? 'completed' : 'reopened'}.`, { kind: 'onboarding', key, id: result.id });
   }
   return loadState(db, id);
 }
